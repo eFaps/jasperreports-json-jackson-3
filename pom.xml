@@ -11,6 +11,7 @@
     </parent>
     <groupId>org.efaps</groupId>
     <artifactId>jasperreports-json-jackson-3</artifactId>
+    <version>7.0.3-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>JasperReports JSON jackson-3</name>
     <description>JasperReports JSON jackson-3</description>
@@ -20,6 +21,13 @@
         <tag>${revision}</tag>
         <url>${scmUrl}</url>
     </scm>
+    <distributionManagement>
+        <snapshotRepository>
+            <id>sonatype-nexus-snapshots</id>
+            <name>Sonatype Nexus Snapshots</name>
+            <url>https://central.sonatype.com/repository/maven-snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
     <dependencies>
         <dependency>
             <groupId>commons-logging</groupId>

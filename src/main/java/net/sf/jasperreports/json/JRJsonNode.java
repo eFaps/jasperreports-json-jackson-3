@@ -23,14 +23,14 @@
  */
 package net.sf.jasperreports.json;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 /**
  * @author Narcis Marcu (narcism@users.sourceforge.net)
  */
 public class JRJsonNode {
-    private JRJsonNode parent;
-    private JsonNode dataNode;
+    private final JRJsonNode parent;
+    private final JsonNode dataNode;
 
     public JRJsonNode(JRJsonNode parent, JsonNode dataNode) {
         this.parent = parent;

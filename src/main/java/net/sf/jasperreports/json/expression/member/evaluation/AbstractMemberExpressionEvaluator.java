@@ -29,15 +29,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.jasperreports.json.JRJsonNode;
-import net.sf.jasperreports.json.expression.EvaluationContext;
-import net.sf.jasperreports.json.expression.member.MemberExpression;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import net.sf.jasperreports.json.JRJsonNode;
+import net.sf.jasperreports.json.expression.EvaluationContext;
+import net.sf.jasperreports.json.expression.member.MemberExpression;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+
 
 /**
  * @author Narcis Marcu (narcism@users.sourceforge.net)
@@ -45,7 +45,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 public abstract class AbstractMemberExpressionEvaluator implements MemberExpressionEvaluator {
     private static final Log log = LogFactory.getLog(AbstractMemberExpressionEvaluator.class);
 
-    private EvaluationContext evaluationContext;
+    private final EvaluationContext evaluationContext;
 
 
     public AbstractMemberExpressionEvaluator(EvaluationContext evaluationContext) {
@@ -64,7 +64,7 @@ public abstract class AbstractMemberExpressionEvaluator implements MemberExpress
         }
 
         if (getMemberExpression().getFilterExpression() != null) {
-            boolean evalResult = getMemberExpression().getFilterExpression().evaluate(node, evaluationContext.getFilterExpressionEvaluatorVisitor());
+            final boolean evalResult = getMemberExpression().getFilterExpression().evaluate(node, evaluationContext.getFilterExpressionEvaluatorVisitor());
 
             if (log.isDebugEnabled()) {
                 log.debug("filter returns " + evalResult);
@@ -93,20 +93,20 @@ public abstract class AbstractMemberExpressionEvaluator implements MemberExpress
             log.debug("filtering array: " + childArray + "; deeperKey: " + deeperKey + "; keepArrayContainment: " + keepArrayContainment);
         }
 
-        List<JRJsonNode> result = new ArrayList<>();
+        final List<JRJsonNode> result = new ArrayList<>();
         ArrayNode container = null;
 
         if (keepArrayContainment) {
             container = evaluationContext.getObjectMapper().createArrayNode();
         }
 
-        for (JsonNode current : childArray) {
+        for (final JsonNode current : childArray) {
             if (deeperKey != null) {
-                JsonNode deeperNode = current.get(deeperKey);
+                final JsonNode deeperNode = current.get(deeperKey);
 
                 if (deeperNode != null) {
-                    JRJsonNode currentParent = parent.createChild(current);
-                    JRJsonNode currentChild = currentParent.createChild(deeperNode);
+                    final JRJsonNode currentParent = parent.createChild(current);
+                    final JRJsonNode currentChild = currentParent.createChild(deeperNode);
 
                     if (applyFilter(currentChild)) {
                         if (keepArrayContainment) {
@@ -117,7 +117,7 @@ public abstract class AbstractMemberExpressionEvaluator implements MemberExpress
                     }
                 }
             } else {
-                JRJsonNode currentChild = parent.createChild(current);
+                final JRJsonNode currentChild = parent.createChild(current);
 
                 if (applyFilter(currentChild)) {
                     if (keepArrayContainment) {
@@ -137,19 +137,19 @@ public abstract class AbstractMemberExpressionEvaluator implements MemberExpress
     }
 
     protected void addChildrenToStack(JRJsonNode stackNode, Deque<JRJsonNode> stack) {
-        JsonNode stackDataNode = stackNode.getDataNode();
+        final JsonNode stackDataNode = stackNode.getDataNode();
 
         if (stackDataNode.isObject()) {
-            Iterator<Map.Entry<String, JsonNode>> it = stackDataNode.fields();
+            final Iterator<Map.Entry<String, JsonNode>> it = stackDataNode.properties().iterator();
 
             while (it.hasNext()) {
-                JsonNode current = it.next().getValue();
+                final JsonNode current = it.next().getValue();
                 stack.addLast(stackNode.createChild(current));
             }
         }
         // if array => push all children
         else if (stackDataNode.isArray()) {
-            for (JsonNode deeper: stackDataNode) {
+            for (final JsonNode deeper: stackDataNode) {
                 stack.addLast(stackNode.createChild(deeper));
             }
         }

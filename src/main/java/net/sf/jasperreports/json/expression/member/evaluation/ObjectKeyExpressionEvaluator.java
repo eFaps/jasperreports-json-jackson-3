@@ -23,23 +23,28 @@
  */
 package net.sf.jasperreports.json.expression.member.evaluation;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.MissingNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import net.sf.jasperreports.json.JRJsonNode;
 import net.sf.jasperreports.json.JsonNodeContainer;
 import net.sf.jasperreports.json.expression.EvaluationContext;
 import net.sf.jasperreports.json.expression.member.MemberExpression;
 import net.sf.jasperreports.json.expression.member.ObjectKeyExpression;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.MissingNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * @author Narcis Marcu (narcism@users.sourceforge.net)
@@ -47,8 +52,8 @@ import java.util.regex.Pattern;
 public class ObjectKeyExpressionEvaluator extends AbstractMemberExpressionEvaluator {
     private static final Log log = LogFactory.getLog(ObjectKeyExpressionEvaluator.class);
 
-    private ObjectKeyExpression expression;
-    private boolean isCalledFromFilter;
+    private final ObjectKeyExpression expression;
+    private final boolean isCalledFromFilter;
     private Pattern fieldNamePattern;
 
 
@@ -70,7 +75,7 @@ public class ObjectKeyExpressionEvaluator extends AbstractMemberExpressionEvalua
 
     @Override
     public JsonNodeContainer evaluate(JsonNodeContainer contextNode) {
-        List<JRJsonNode> nodes = contextNode.getNodes();
+        final List<JRJsonNode> nodes = contextNode.getNodes();
 
         if (log.isDebugEnabled()) {
             log.debug("---> evaluating expression [" + expression +
@@ -78,10 +83,10 @@ public class ObjectKeyExpressionEvaluator extends AbstractMemberExpressionEvalua
                     ", cSize: " + contextNode.getContainerSize() + ")");
         }
 
-        JsonNodeContainer result = new JsonNodeContainer();
+        final JsonNodeContainer result = new JsonNodeContainer();
 
-        for (JRJsonNode node: nodes) {
-            List<JRJsonNode> evaluatedNodes = singleEval(node);
+        for (final JRJsonNode node: nodes) {
+            final List<JRJsonNode> evaluatedNodes = singleEval(node);
 
             if (evaluatedNodes.size() > 0) {
                 result.addNodes(evaluatedNodes);
@@ -120,17 +125,17 @@ public class ObjectKeyExpressionEvaluator extends AbstractMemberExpressionEvalua
         }
 
         List<JRJsonNode> result = new ArrayList<>();
-        JsonNode dataNode = jrJsonNode.getDataNode();
+        final JsonNode dataNode = jrJsonNode.getDataNode();
 
         // advance into object
         if (dataNode.isObject()) {
             // if wildcard => filter and add all its children(the values for each key) to an arrayNode
             if (expression.isWildcard()) {
-                ArrayNode container = getEvaluationContext().getObjectMapper().createArrayNode();
-                Iterator<Map.Entry<String, JsonNode>> it = dataNode.fields();
+                final ArrayNode container = getEvaluationContext().getObjectMapper().createArrayNode();
+                final Iterator<Map.Entry<String, JsonNode>> it = dataNode.fields();
 
                 while (it.hasNext()) {
-                    JsonNode current = it.next().getValue();
+                    final JsonNode current = it.next().getValue();
 
                     if (applyFilter(jrJsonNode.createChild(current))) {
                         container.add(current);
@@ -143,7 +148,7 @@ public class ObjectKeyExpressionEvaluator extends AbstractMemberExpressionEvalua
             }
             // else go down and filter
             else {
-                JRJsonNode deeperNode = goDeeperIntoObjectNode(jrJsonNode, isCalledFromFilter);
+                final JRJsonNode deeperNode = goDeeperIntoObjectNode(jrJsonNode, isCalledFromFilter);
                 if (deeperNode != null) {
                     result.add(deeperNode);
                 }
@@ -170,9 +175,9 @@ public class ObjectKeyExpressionEvaluator extends AbstractMemberExpressionEvalua
                             "key: [" + expression.getObjectKey() + "]") + " on " + jrJsonNode.getDataNode());
         }
 
-        List<JRJsonNode> result = new ArrayList<>();
-        Deque<JRJsonNode> stack = new ArrayDeque<>();
-        JsonNode initialDataNode = jrJsonNode.getDataNode();
+        final List<JRJsonNode> result = new ArrayList<>();
+        final Deque<JRJsonNode> stack = new ArrayDeque<>();
+        final JsonNode initialDataNode = jrJsonNode.getDataNode();
 
         if (log.isDebugEnabled()) {
             log.debug("initial stack population with: " + initialDataNode);
@@ -180,7 +185,7 @@ public class ObjectKeyExpressionEvaluator extends AbstractMemberExpressionEvalua
 
         // populate the stack initially
         if (initialDataNode.isArray()) {
-            for (JsonNode deeper: initialDataNode) {
+            for (final JsonNode deeper: initialDataNode) {
                 stack.addLast(jrJsonNode.createChild(deeper));
             }
         } else {
@@ -188,8 +193,8 @@ public class ObjectKeyExpressionEvaluator extends AbstractMemberExpressionEvalua
         }
 
         while (!stack.isEmpty()) {
-            JRJsonNode stackNode = stack.pop();
-            JsonNode stackDataNode = stackNode.getDataNode();
+            final JRJsonNode stackNode = stack.pop();
+            final JsonNode stackDataNode = stackNode.getDataNode();
 
             addChildrenToStack(stackNode, stack);
 
@@ -211,7 +216,7 @@ public class ObjectKeyExpressionEvaluator extends AbstractMemberExpressionEvalua
                 }
                 // else go down and filter
                 else {
-                    JRJsonNode deeperNode = goDeeperIntoObjectNode(stackNode, false);
+                    final JRJsonNode deeperNode = goDeeperIntoObjectNode(stackNode, false);
                     if (deeperNode != null) {
                         result.add(deeperNode);
                     }
@@ -234,23 +239,23 @@ public class ObjectKeyExpressionEvaluator extends AbstractMemberExpressionEvalua
     }
 
     private JRJsonNode goDeeperIntoObjectNode(JRJsonNode jrJsonNode, boolean keepMissingNode) {
-        ObjectNode dataNode = (ObjectNode) jrJsonNode.getDataNode();
-        ArrayNode container = getEvaluationContext().getObjectMapper().createArrayNode();
+        final ObjectNode dataNode = (ObjectNode) jrJsonNode.getDataNode();
+        final ArrayNode container = getEvaluationContext().getObjectMapper().createArrayNode();
 
         // A complex expression allows an object key to treated as a REGEX
         if (expression.isComplex()) {
-            Iterator<String> fieldNamesIterator = dataNode.fieldNames();
+            final Iterator<String> fieldNamesIterator = dataNode.fieldNames();
             while (fieldNamesIterator.hasNext()) {
-                String fieldName = fieldNamesIterator.next();
-                Matcher fieldNameMatcher = fieldNamePattern.matcher(fieldName);
+                final String fieldName = fieldNamesIterator.next();
+                final Matcher fieldNameMatcher = fieldNamePattern.matcher(fieldName);
 
                 if (fieldNameMatcher.matches()) {
-                    JsonNode deeperNode = dataNode.path(fieldName);
+                    final JsonNode deeperNode = dataNode.path(fieldName);
 
                     // if the deeper node is object/value => filter and add it
                     if (deeperNode.isObject() || deeperNode.isValueNode() || deeperNode.isArray()) {
 
-                        JRJsonNode child = jrJsonNode.createChild(deeperNode);
+                        final JRJsonNode child = jrJsonNode.createChild(deeperNode);
                         if (applyFilter(child)) {
                             container.add(deeperNode);
                         }
@@ -258,12 +263,12 @@ public class ObjectKeyExpressionEvaluator extends AbstractMemberExpressionEvalua
                 }
             }
         } else {
-            JsonNode deeperNode = dataNode.path(expression.getObjectKey());
+            final JsonNode deeperNode = dataNode.path(expression.getObjectKey());
 
             // if the deeper node is object/value => filter and add it
             if (deeperNode.isObject() || deeperNode.isValueNode() || deeperNode.isArray()) {
 
-                JRJsonNode child = jrJsonNode.createChild(deeperNode);
+                final JRJsonNode child = jrJsonNode.createChild(deeperNode);
                 if (applyFilter(child)) {
                     container.add(deeperNode);
                 }

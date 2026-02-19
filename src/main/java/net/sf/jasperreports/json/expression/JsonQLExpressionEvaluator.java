@@ -34,8 +34,8 @@ import net.sf.jasperreports.json.expression.member.evaluation.DefaultMemberExpre
 import net.sf.jasperreports.json.expression.member.evaluation.DefaultMemberExpressionEvaluatorVisitorForFilter;
 import net.sf.jasperreports.json.expression.member.evaluation.MemberExpressionEvaluatorVisitor;
 import net.sf.jasperreports.json.util.JsonUtil;
+import tools.jackson.databind.ObjectMapper;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @author Narcis Marcu (narcism@users.sourceforge.net)
@@ -71,11 +71,11 @@ public class JsonQLExpressionEvaluator {
 
     public JsonNodeContainer evaluate(JsonQLExpression expression, JRJsonNode contextNode) {
 
-        List<MemberExpression> memberExpressionList = expression.getMemberExpressionList();
+        final List<MemberExpression> memberExpressionList = expression.getMemberExpressionList();
         JsonNodeContainer result = new JsonNodeContainer(contextNode);
 
         if (memberExpressionList != null) {
-            for (MemberExpression me: memberExpressionList) {
+            for (final MemberExpression me: memberExpressionList) {
                 result = me.evaluate(result, evaluationContext.getMemberExpressionEvaluatorVisitor());
 
                 if (result == null) {

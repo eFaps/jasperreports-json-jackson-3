@@ -25,8 +25,9 @@ package net.sf.jasperreports.json.expression;
 
 import net.sf.jasperreports.json.expression.filter.evaluation.FilterExpressionEvaluatorVisitor;
 import net.sf.jasperreports.json.expression.member.evaluation.MemberExpressionEvaluatorVisitor;
+import tools.jackson.databind.ObjectMapper;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 /**
  * @author Narcis Marcu (narcism@users.sourceforge.net)

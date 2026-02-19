@@ -28,16 +28,16 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import net.sf.jasperreports.json.JRJsonNode;
 import net.sf.jasperreports.json.JsonNodeContainer;
 import net.sf.jasperreports.json.expression.EvaluationContext;
 import net.sf.jasperreports.json.expression.member.ArrayIndexExpression;
 import net.sf.jasperreports.json.expression.member.MemberExpression;
+import tools.jackson.databind.JsonNode;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * @author Narcis Marcu (narcism@users.sourceforge.net)
@@ -45,7 +45,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class ArrayIndexExpressionEvaluator extends AbstractMemberExpressionEvaluator {
     private static final Log log = LogFactory.getLog(ArrayIndexExpressionEvaluator.class);
 
-    private ArrayIndexExpression expression;
+    private final ArrayIndexExpression expression;
 
     public ArrayIndexExpressionEvaluator(EvaluationContext evaluationContext, ArrayIndexExpression expression) {
         super(evaluationContext);
@@ -60,14 +60,14 @@ public class ArrayIndexExpressionEvaluator extends AbstractMemberExpressionEvalu
                     ", cSize: " + contextNode.getContainerSize() + ")");
         }
 
-        JsonNodeContainer result = new JsonNodeContainer();
+        final JsonNodeContainer result = new JsonNodeContainer();
 
         switch(expression.getDirection()) {
             case DOWN:
                 // this only make sense for containers with appropriate size
                 if (expression.getIndex() >= 0 && expression.getIndex() < contextNode.getContainerSize()) {
-                    List<JRJsonNode> containerNodes = contextNode.getContainerNodes();
-                    JRJsonNode nodeAtIndex = containerNodes.get(expression.getIndex());
+                    final List<JRJsonNode> containerNodes = contextNode.getContainerNodes();
+                    final JRJsonNode nodeAtIndex = containerNodes.get(expression.getIndex());
 
                     if (applyFilter(nodeAtIndex)) {
                         result.add(nodeAtIndex);
@@ -75,9 +75,9 @@ public class ArrayIndexExpressionEvaluator extends AbstractMemberExpressionEvalu
                 }
                 break;
             case ANYWHERE_DOWN:
-                List<JRJsonNode> nodes = contextNode.getContainerNodes();
+                final List<JRJsonNode> nodes = contextNode.getContainerNodes();
 
-                for (JRJsonNode node: nodes) {
+                for (final JRJsonNode node: nodes) {
                     result.addNodes(goAnywhereDown(node));
                 }
 
@@ -98,9 +98,9 @@ public class ArrayIndexExpressionEvaluator extends AbstractMemberExpressionEvalu
     }
 
     private List<JRJsonNode> goAnywhereDown(JRJsonNode jrJsonNode) {
-        List<JRJsonNode> result = new ArrayList<>();
-        Deque<JRJsonNode> stack = new ArrayDeque<>();
-        JsonNode initialDataNode = jrJsonNode.getDataNode();
+        final List<JRJsonNode> result = new ArrayList<>();
+        final Deque<JRJsonNode> stack = new ArrayDeque<>();
+        final JsonNode initialDataNode = jrJsonNode.getDataNode();
 
         if (log.isDebugEnabled()) {
             log.debug("initial stack population with: " + initialDataNode);
@@ -110,8 +110,8 @@ public class ArrayIndexExpressionEvaluator extends AbstractMemberExpressionEvalu
         stack.push(jrJsonNode);
 
         while (!stack.isEmpty()) {
-            JRJsonNode stackNode = stack.pop();
-            JsonNode stackDataNode = stackNode.getDataNode();
+            final JRJsonNode stackNode = stack.pop();
+            final JsonNode stackDataNode = stackNode.getDataNode();
 
             addChildrenToStack(stackNode, stack);
 
@@ -122,8 +122,8 @@ public class ArrayIndexExpressionEvaluator extends AbstractMemberExpressionEvalu
                 }
 
                 if (expression.getIndex() >= 0 && expression.getIndex() < stackDataNode.size()) {
-                    JsonNode nodeAtIndex = stackDataNode.get(expression.getIndex());
-                    JRJsonNode child = stackNode.createChild(nodeAtIndex);
+                    final JsonNode nodeAtIndex = stackDataNode.get(expression.getIndex());
+                    final JRJsonNode child = stackNode.createChild(nodeAtIndex);
 
                     if (applyFilter(child)) {
                         result.add(child);

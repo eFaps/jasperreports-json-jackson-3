@@ -28,17 +28,17 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import net.sf.jasperreports.json.JRJsonNode;
 import net.sf.jasperreports.json.JsonNodeContainer;
 import net.sf.jasperreports.json.expression.EvaluationContext;
 import net.sf.jasperreports.json.expression.member.ArrayConstructionExpression;
 import net.sf.jasperreports.json.expression.member.MemberExpression;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 
 /**
  * @author Narcis Marcu (narcism@users.sourceforge.net)
@@ -46,7 +46,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 public class ArrayConstructionExpressionEvaluator extends AbstractMemberExpressionEvaluator {
     private static final Log log = LogFactory.getLog(ArrayConstructionExpressionEvaluator.class);
 
-    private ArrayConstructionExpression expression;
+    private final ArrayConstructionExpression expression;
 
     public ArrayConstructionExpressionEvaluator(EvaluationContext evaluationContext, ArrayConstructionExpression expression) {
         super(evaluationContext);
@@ -61,16 +61,16 @@ public class ArrayConstructionExpressionEvaluator extends AbstractMemberExpressi
                     ", cSize: " + contextNode.getContainerSize() + ")");
         }
 
-        JsonNodeContainer result = new JsonNodeContainer();
+        final JsonNodeContainer result = new JsonNodeContainer();
 
         switch(expression.getDirection()) {
             case DOWN:
-                List<JRJsonNode> containerNodes = contextNode.getContainerNodes();
-                int containerSize = contextNode.getContainerSize();
+                final List<JRJsonNode> containerNodes = contextNode.getContainerNodes();
+                final int containerSize = contextNode.getContainerSize();
 
-                for (Integer idx: expression.getIndexes()) {
+                for (final Integer idx: expression.getIndexes()) {
                     if (idx >= 0 && idx < containerSize) {
-                        JRJsonNode nodeAtIndex = containerNodes.get(idx);
+                        final JRJsonNode nodeAtIndex = containerNodes.get(idx);
 
                         if (applyFilter(nodeAtIndex)) {
                             result.add(nodeAtIndex);
@@ -80,9 +80,9 @@ public class ArrayConstructionExpressionEvaluator extends AbstractMemberExpressi
 
                 break;
             case ANYWHERE_DOWN:
-                List<JRJsonNode> nodes = contextNode.getContainerNodes();
+                final List<JRJsonNode> nodes = contextNode.getContainerNodes();
 
-                for (JRJsonNode node: nodes) {
+                for (final JRJsonNode node: nodes) {
                     result.addNodes(goAnywhereDown(node));
                 }
 
@@ -102,9 +102,9 @@ public class ArrayConstructionExpressionEvaluator extends AbstractMemberExpressi
     }
 
     private List<JRJsonNode> goAnywhereDown(JRJsonNode jrJsonNode) {
-        List<JRJsonNode> result = new ArrayList<>();
-        Deque<JRJsonNode> stack = new ArrayDeque<>();
-        JsonNode initialDataNode = jrJsonNode.getDataNode();
+        final List<JRJsonNode> result = new ArrayList<>();
+        final Deque<JRJsonNode> stack = new ArrayDeque<>();
+        final JsonNode initialDataNode = jrJsonNode.getDataNode();
 
         if (log.isDebugEnabled()) {
             log.debug("initial stack population with: " + initialDataNode);
@@ -114,8 +114,8 @@ public class ArrayConstructionExpressionEvaluator extends AbstractMemberExpressi
         stack.push(jrJsonNode);
 
         while (!stack.isEmpty()) {
-            JRJsonNode stackNode = stack.pop();
-            JsonNode stackDataNode = stackNode.getDataNode();
+            final JRJsonNode stackNode = stack.pop();
+            final JsonNode stackDataNode = stackNode.getDataNode();
 
             addChildrenToStack(stackNode, stack);
 
@@ -125,11 +125,11 @@ public class ArrayConstructionExpressionEvaluator extends AbstractMemberExpressi
                     log.debug("processing stack element: " + stackDataNode);
                 }
 
-                ArrayNode newNode = getEvaluationContext().getObjectMapper().createArrayNode();
+                final ArrayNode newNode = getEvaluationContext().getObjectMapper().createArrayNode();
 
-                for (Integer idx: expression.getIndexes()) {
+                for (final Integer idx: expression.getIndexes()) {
                     if (idx >= 0 && idx < stackDataNode.size()) {
-                        JRJsonNode nodeAtIndex = stackNode.createChild(stackDataNode.get(idx));
+                        final JRJsonNode nodeAtIndex = stackNode.createChild(stackDataNode.get(idx));
 
                         if (applyFilter(nodeAtIndex)) {
                             newNode.add(nodeAtIndex.getDataNode());

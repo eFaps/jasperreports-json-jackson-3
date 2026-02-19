@@ -26,13 +26,15 @@ package net.sf.jasperreports.json;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
+
+
 
 /**
  * @author Narcis Marcu (narcism@users.sourceforge.net)
  */
 public class JsonNodeContainer {
-    private List<JRJsonNode> nodes;
+    private final List<JRJsonNode> nodes;
 
     public JsonNodeContainer() {
         nodes = new ArrayList<>();
@@ -57,12 +59,12 @@ public class JsonNodeContainer {
 
     public List<JRJsonNode> getContainerNodes() {
         if (nodes.size() == 1 && nodes.get(0).getDataNode().isArray()) {
-            List<JRJsonNode> result = new ArrayList<>();
+            final List<JRJsonNode> result = new ArrayList<>();
 
-            JRJsonNode parentNode = nodes.get(0);
-            JsonNode arrayNode = parentNode.getDataNode();
+            final JRJsonNode parentNode = nodes.get(0);
+            final JsonNode arrayNode = parentNode.getDataNode();
 
-            for (JsonNode deeper: arrayNode) {
+            for (final JsonNode deeper: arrayNode) {
                 result.add(parentNode.createChild(deeper));
             }
 

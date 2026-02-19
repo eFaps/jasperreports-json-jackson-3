@@ -25,6 +25,9 @@ package net.sf.jasperreports.json.expression.filter.evaluation;
 
 import java.math.BigDecimal;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import net.sf.jasperreports.engine.type.JsonOperatorEnum;
 import net.sf.jasperreports.json.JRJsonNode;
 import net.sf.jasperreports.json.JsonNodeContainer;
@@ -33,11 +36,9 @@ import net.sf.jasperreports.json.expression.filter.BasicFilterExpression;
 import net.sf.jasperreports.json.expression.filter.FilterExpression;
 import net.sf.jasperreports.json.expression.filter.ValueDescriptor;
 import net.sf.jasperreports.json.expression.member.MemberExpression;
+import tools.jackson.databind.JsonNode;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * @author Narcis Marcu (narcism@users.sourceforge.net)
@@ -45,8 +46,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class BasicFilterExpressionEvaluator implements FilterExpressionEvaluator {
     private static final Log log = LogFactory.getLog(BasicFilterExpressionEvaluator.class);
 
-    private EvaluationContext evaluationContext;
-    private BasicFilterExpression expression;
+    private final EvaluationContext evaluationContext;
+    private final BasicFilterExpression expression;
 
 
     public BasicFilterExpressionEvaluator(EvaluationContext evaluationContext, BasicFilterExpression expression) {
@@ -64,7 +65,7 @@ public class BasicFilterExpressionEvaluator implements FilterExpressionEvaluator
         }
 
         // traverse the members
-        outer: for (MemberExpression me: expression.getMemberExpressionList()) {
+        outer: for (final MemberExpression me: expression.getMemberExpressionList()) {
             memberEval = me.evaluate(memberEval, evaluationContext.getMemberExpressionEvaluatorVisitorForFilter());
 
             // exit on first null
@@ -169,7 +170,7 @@ public class BasicFilterExpressionEvaluator implements FilterExpressionEvaluator
 
     protected boolean applySizeOperator(int size) {
         if (expression.getValueDescriptor().getType() == FilterExpression.VALUE_TYPE.INTEGER) {
-            int operand = Integer.parseInt(expression.getValueDescriptor().getValue());
+            final int operand = Integer.parseInt(expression.getValueDescriptor().getValue());
 
             switch(expression.getOperator()) {
                 case EQ:
@@ -192,9 +193,9 @@ public class BasicFilterExpressionEvaluator implements FilterExpressionEvaluator
     }
 
     protected boolean applyOperator(JsonNode valueNode) {
-        ValueDescriptor valueDescriptor = expression.getValueDescriptor();
-        JsonOperatorEnum operator = expression.getOperator();
-        FilterExpression.VALUE_TYPE type = valueDescriptor.getType();
+        final ValueDescriptor valueDescriptor = expression.getValueDescriptor();
+        final JsonOperatorEnum operator = expression.getOperator();
+        final FilterExpression.VALUE_TYPE type = valueDescriptor.getType();
 
         // do null comparison first
         if (FilterExpression.VALUE_TYPE.NULL.equals(type)) {
@@ -205,57 +206,55 @@ public class BasicFilterExpressionEvaluator implements FilterExpressionEvaluator
                     return !(valueNode.isNull() || valueNode.isMissingNode());
                 default:
             }
-        } else {
-            // compare numbers with numbers
-            if (valueNode.isNumber() &&
-                    (FilterExpression.VALUE_TYPE.INTEGER.equals(type) || FilterExpression.VALUE_TYPE.DOUBLE.equals(type))) {
+        } else // compare numbers with numbers
+        if (valueNode.isNumber() &&
+                (FilterExpression.VALUE_TYPE.INTEGER.equals(type) || FilterExpression.VALUE_TYPE.DOUBLE.equals(type))) {
 
-                BigDecimal opRight = new BigDecimal(valueDescriptor.getValue());
-                BigDecimal opLeft;
+            final BigDecimal opRight = new BigDecimal(valueDescriptor.getValue());
+            BigDecimal opLeft;
 
-                if (valueNode.isBigDecimal()) {
-                    opLeft = valueNode.decimalValue();
-                } else {
-                    opLeft = new BigDecimal(valueNode.asText());
-                }
-
-                switch (operator) {
-                    case EQ:
-                        return opLeft.compareTo(opRight) == 0;
-                    case NE:
-                        return opLeft.compareTo(opRight) != 0;
-                    case GT:
-                        return opLeft.compareTo(opRight) > 0;
-                    case GE:
-                        return opLeft.compareTo(opRight) >= 0;
-                    case LT:
-                        return opLeft.compareTo(opRight) < 0;
-                    case LE:
-                        return opLeft.compareTo(opRight) <= 0;
-                    default:
-                }
+            if (valueNode.isBigDecimal()) {
+                opLeft = valueNode.decimalValue();
+            } else {
+                opLeft = new BigDecimal(valueNode.asText());
             }
-            // compare strings with strings
-            else if (valueNode.isTextual() && FilterExpression.VALUE_TYPE.STRING.equals(type)) {
-                switch (operator) {
-                    case EQ:
-                        return valueNode.textValue().equals(valueDescriptor.getValue());
-                    case NE:
-                        return !valueNode.textValue().equals(valueDescriptor.getValue());
-                    case CONTAINS:
-                        return valueNode.textValue().contains(valueDescriptor.getValue());
-                    default:
-                }
+
+            switch (operator) {
+                case EQ:
+                    return opLeft.compareTo(opRight) == 0;
+                case NE:
+                    return opLeft.compareTo(opRight) != 0;
+                case GT:
+                    return opLeft.compareTo(opRight) > 0;
+                case GE:
+                    return opLeft.compareTo(opRight) >= 0;
+                case LT:
+                    return opLeft.compareTo(opRight) < 0;
+                case LE:
+                    return opLeft.compareTo(opRight) <= 0;
+                default:
             }
-            // compare booleans with booleans
-            else if (valueNode.isBoolean() && FilterExpression.VALUE_TYPE.BOOLEAN.equals(type)) {
-                switch (operator) {
-                    case EQ:
-                        return valueNode.booleanValue() == Boolean.parseBoolean(valueDescriptor.getValue());
-                    case NE:
-                        return valueNode.booleanValue() != Boolean.parseBoolean(valueDescriptor.getValue());
-                    default:
-                }
+        }
+        // compare strings with strings
+        else if (valueNode.isTextual() && FilterExpression.VALUE_TYPE.STRING.equals(type)) {
+            switch (operator) {
+                case EQ:
+                    return valueNode.textValue().equals(valueDescriptor.getValue());
+                case NE:
+                    return !valueNode.textValue().equals(valueDescriptor.getValue());
+                case CONTAINS:
+                    return valueNode.textValue().contains(valueDescriptor.getValue());
+                default:
+            }
+        }
+        // compare booleans with booleans
+        else if (valueNode.isBoolean() && FilterExpression.VALUE_TYPE.BOOLEAN.equals(type)) {
+            switch (operator) {
+                case EQ:
+                    return valueNode.booleanValue() == Boolean.parseBoolean(valueDescriptor.getValue());
+                case NE:
+                    return valueNode.booleanValue() != Boolean.parseBoolean(valueDescriptor.getValue());
+                default:
             }
         }
 

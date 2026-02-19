@@ -34,8 +34,6 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import net.sf.jasperreports.annotations.properties.Property;
 import net.sf.jasperreports.annotations.properties.PropertyScope;
 import net.sf.jasperreports.engine.JRException;
@@ -55,6 +53,7 @@ import net.sf.jasperreports.json.util.JsonUtil;
 import net.sf.jasperreports.properties.PropertyConstants;
 import net.sf.jasperreports.repo.RepositoryContext;
 import net.sf.jasperreports.repo.SimpleRepositoryContext;
+import tools.jackson.databind.JsonNode;
 
 /**
  * @author Narcis Marcu (narcism@users.sourceforge.net)
@@ -68,25 +67,25 @@ public class JsonQLDataSource extends JRAbstractTextDataSource implements JsonDa
     /**
      * Property specifying the JSONQL expression for the dataset field.
      */
-	@Property (
-			category = PropertyConstants.CATEGORY_DATA_SOURCE,
-			scopes = {PropertyScope.FIELD},
-			scopeQualifications = {JsonQLQueryExecuterFactory.JSONQL_QUERY_EXECUTER_NAME,
-					DataAdapterServiceConstants.JSONQL_DESIGNATION},
-			sinceVersion = PropertyConstants.VERSION_6_3_1
-	)
+    @Property (
+            category = PropertyConstants.CATEGORY_DATA_SOURCE,
+            scopes = {PropertyScope.FIELD},
+            scopeQualifications = {JsonQLQueryExecuterFactory.JSONQL_QUERY_EXECUTER_NAME,
+                    DataAdapterServiceConstants.JSONQL_DESIGNATION},
+            sinceVersion = PropertyConstants.VERSION_6_3_1
+    )
     public static final String PROPERTY_FIELD_EXPRESSION = JRPropertiesUtil.PROPERTY_PREFIX + "jsonql.field.expression";
 
-    private JRJsonNode root;
-    private String selectExpression;
+    private final JRJsonNode root;
+    private final String selectExpression;
 
     private JRJsonNode currentJsonNode;
     private List<JRJsonNode> nodes;
     private int currentNodeIndex = - 1;
 
-    private JsonQLExecuter jsonQLExecuter;
+    private final JsonQLExecuter jsonQLExecuter;
 
-    private Map<String, String> fieldExpressions = new HashMap<>();
+    private final Map<String, String> fieldExpressions = new HashMap<>();
 
 
     public JsonQLDataSource(File file, String selectExpression) throws JRException {
@@ -151,25 +150,25 @@ public class JsonQLDataSource extends JRAbstractTextDataSource implements JsonDa
         return false;
     }
 
-	@Override
-	public int recordCount() {
-		return nodes == null ? 0 : nodes.size();
-	}
+    @Override
+    public int recordCount() {
+        return nodes == null ? 0 : nodes.size();
+    }
 
-	@Override
-	public int currentIndex() {
-		return currentNodeIndex;
-	}
+    @Override
+    public int currentIndex() {
+        return currentNodeIndex;
+    }
 
-	@Override
-	public void moveToRecord(int index) throws NoRecordAtIndexException {
-		if (nodes != null && index >= 0 && index < nodes.size()) {
-			 currentNodeIndex = index;
-			 currentJsonNode = nodes.get(index);
-		} else {
-			throw new NoRecordAtIndexException(index);
-		}
-	}
+    @Override
+    public void moveToRecord(int index) throws NoRecordAtIndexException {
+        if (nodes != null && index >= 0 && index < nodes.size()) {
+             currentNodeIndex = index;
+             currentJsonNode = nodes.get(index);
+        } else {
+            throw new NoRecordAtIndexException(index);
+        }
+    }
 
     @Override
     public Object getFieldValue(JRField jrField) throws JRException {
@@ -189,7 +188,7 @@ public class JsonQLDataSource extends JRAbstractTextDataSource implements JsonDa
             return null;
         }
 
-        JRJsonNode selectedNode = jsonQLExecuter.selectNode(currentJsonNode, root, expression);
+        final JRJsonNode selectedNode = jsonQLExecuter.selectNode(currentJsonNode, root, expression);
         if (selectedNode != null) {
             return getConvertedValue(selectedNode, jrField);
         }
@@ -208,15 +207,15 @@ public class JsonQLDataSource extends JRAbstractTextDataSource implements JsonDa
             throw new JRException(EXCEPTION_MESSAGE_KEY_NO_DATA, (Object[])null);
         }
 
-        JsonQLDataSource subDataSource = new JsonQLDataSource(currentJsonNode, selectExpression);
+        final JsonQLDataSource subDataSource = new JsonQLDataSource(currentJsonNode, selectExpression);
         subDataSource.setTextAttributes(this);
 
         return subDataSource;
     }
 
     protected Object getConvertedValue(JRJsonNode node, JRField jrField) throws JRException {
-        JsonNode dataNode = node.getDataNode();
-        Class<?> valueClass = jrField.getValueClass();
+        final JsonNode dataNode = node.getDataNode();
+        final Class<?> valueClass = jrField.getValueClass();
 
         if (log.isDebugEnabled()) {
             log.debug("attempting to convert: " + dataNode + " to class: " + valueClass);
@@ -257,7 +256,7 @@ public class JsonQLDataSource extends JRAbstractTextDataSource implements JsonDa
                             new Object[]{jrField.getName(), valueClass.getName()});
                 }
 
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 throw new JRException(EXCEPTION_MESSAGE_KEY_JSON_FIELD_VALUE_NOT_RETRIEVED,
                         new Object[]{jrField.getName(), valueClass.getName()}, e);
             }

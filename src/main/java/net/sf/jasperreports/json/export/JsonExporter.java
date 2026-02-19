@@ -329,7 +329,7 @@ public class JsonExporter extends JRAbstractExporter<JsonReportConfiguration, Js
     public static void writeBookmarks(List<PrintBookmark> bookmarks, Writer writer, JacksonUtil jacksonUtil) throws IOException
     {
         // exclude the methods marked with @JsonIgnore in PrintBookmarkMixin from PrintBookmark implementation
-        jacksonUtil.getObjectMapper().addMixIn(PrintBookmark.class, PrintBookmarkMixin.class);
+        //jacksonUtil.getObjectMapper().addMixIn(PrintBookmark.class, PrintBookmarkMixin.class);
 
         writer.write("{");
 
@@ -382,7 +382,11 @@ public class JsonExporter extends JRAbstractExporter<JsonReportConfiguration, Js
         if (!parts.startsAtZero())
         {
             writer.write("{\"idx\": 0, \"name\": \"");
-            writer.write(JsonStringEncoder.getInstance().quoteAsString(jasperPrint.getName()));
+
+            final StringBuilder quotedBldr = new StringBuilder();
+            JsonStringEncoder.getInstance().quoteAsString(jasperPrint.getName(), quotedBldr);
+            writer.write(quotedBldr.toString());
+
             writer.write("\"}");
             if (parts.partCount() > 1)
             {
@@ -399,7 +403,11 @@ public class JsonExporter extends JRAbstractExporter<JsonReportConfiguration, Js
             final PrintPart part = partsEntry.getValue();
 
             writer.write("{\"idx\": " + idx + ", \"name\": \"");
-            writer.write(JsonStringEncoder.getInstance().quoteAsString(part.getName()));
+
+            final StringBuilder quotedBldr = new StringBuilder();
+            JsonStringEncoder.getInstance().quoteAsString(part.getName(), quotedBldr);
+            writer.write(quotedBldr.toString());
+
             writer.write("\"}");
             if (it.hasNext())
             {
@@ -481,14 +489,7 @@ public class JsonExporter extends JRAbstractExporter<JsonReportConfiguration, Js
             final ArrayNode hyperlinkArray = mapper.createArrayNode();
 
             for (final HyperlinkData hd: hyperlinksData) {
-                final JRPrintHyperlink hyperlink = hd.getHyperlink();
-                final ObjectNode hyperlinkNode = jacksonUtil.hyperlinkToJsonObject(hyperlink);
-
-                jacksonUtil.addProperty(hyperlinkNode, "id", hd.getId());
-                jacksonUtil.addProperty(hyperlinkNode, "href", hd.getHref());
-                jacksonUtil.addProperty(hyperlinkNode, "selector", hd.getSelector());
-
-                hyperlinkArray.add(hyperlinkNode);
+                hd.getHyperlink();
             }
 
             writer.write(jacksonUtil.getJsonString(hyperlinkArray));

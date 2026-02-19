@@ -212,7 +212,7 @@ public class JsonDataSource extends JRAbstractTextDataSource implements JsonData
             };
         } else if (result != null && result.isArray()) {
             dataNode = result;
-            jsonNodesIterator = result.elements();
+            jsonNodesIterator = result.iterator();
         }
     }
 

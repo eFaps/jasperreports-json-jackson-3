@@ -24,41 +24,42 @@
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
             <version>${commons-logging.version}</version>
-            <scope>compile</scope>
+            <scope>provided</scope>
             <optional>false</optional>
         </dependency>
         <dependency>
             <groupId>tools.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
             <version>3.0.4</version>
-            <scope>compile</scope>
+            <scope>provided</scope>
             <optional>false</optional>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
             <version>2.21</version>
-            <scope>compile</scope>
+            <scope>provided</scope>
             <optional>false</optional>
         </dependency>
         <dependency>
             <groupId>tools.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>3.0.4</version>
-            <scope>compile</scope>
+            <scope>provided</scope>
             <optional>false</optional>
         </dependency>
         <dependency>
             <groupId>antlr</groupId>
             <artifactId>antlr</artifactId>
             <version>${antlr.version}</version>
-            <scope>compile</scope>
+            <scope>provided</scope>
             <optional>false</optional>
         </dependency>
         <dependency>
           <groupId>net.sf.jasperreports</groupId>
           <artifactId>jasperreports-metadata</artifactId>
           <version>${revision}</version>
+          <scope>provided</scope>
           <exclusions>
             <exclusion>
               <groupId>com.fasterxml.jackson.core</groupId>
@@ -74,6 +75,7 @@
           <groupId>net.sf.jasperreports</groupId>
           <artifactId>jasperreports</artifactId>
           <version>${revision}</version>
+          <scope>provided</scope>
           <exclusions>
             <exclusion>
               <groupId>com.fasterxml.jackson.core</groupId>

@@ -132,7 +132,7 @@ public class ObjectKeyExpressionEvaluator extends AbstractMemberExpressionEvalua
             // if wildcard => filter and add all its children(the values for each key) to an arrayNode
             if (expression.isWildcard()) {
                 final ArrayNode container = getEvaluationContext().getObjectMapper().createArrayNode();
-                final Iterator<Map.Entry<String, JsonNode>> it = dataNode.fields();
+                final Iterator<Map.Entry<String, JsonNode>> it = dataNode.properties().iterator();
 
                 while (it.hasNext()) {
                     final JsonNode current = it.next().getValue();
@@ -244,9 +244,7 @@ public class ObjectKeyExpressionEvaluator extends AbstractMemberExpressionEvalua
 
         // A complex expression allows an object key to treated as a REGEX
         if (expression.isComplex()) {
-            final Iterator<String> fieldNamesIterator = dataNode.fieldNames();
-            while (fieldNamesIterator.hasNext()) {
-                final String fieldName = fieldNamesIterator.next();
+            for (final String fieldName : dataNode.propertyNames()) {
                 final Matcher fieldNameMatcher = fieldNamePattern.matcher(fieldName);
 
                 if (fieldNameMatcher.matches()) {

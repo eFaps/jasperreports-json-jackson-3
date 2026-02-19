@@ -9,6 +9,7 @@
         <version>7.0.3</version>
         <relativePath>./pom-ext-parent.xml</relativePath>
     </parent>
+    <groupId>org.efaps</groupId>
     <artifactId>jasperreports-json-jackson-3</artifactId>
     <packaging>jar</packaging>
     <name>JasperReports JSON jackson-3</name>
